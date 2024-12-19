@@ -1,11 +1,12 @@
 import React, { useContext } from 'react'
 import './Header.css'
 import logo_light from '../assets/logo-black.png'
-import logo_dark from '../assets/logo-white.png'
+// import logo_dark from '../assets/logo-white.png'
 import search_icon_light from '../assets/search-w.png'
-import icon_icon_dark from '../assets/search-b.png'
+// import icon_icon_dark from '../assets/search-b.png'
 import toggle_light from '../assets/night.png'
-import toggle_dark from '../assets/day.png'
+// import toggle_dark from '../assets/day.png'
+import {Link} from "react-router-dom"
 
 function Header() {
 
@@ -26,7 +27,7 @@ function Header() {
                 </div>
 
                 <div className="btn">
-                    <button className='signin-btn'>SignIn</button>
+                    <button className='signin-btn'><Link to="/login" className="signin-btn"> SignIn</Link></button>
                     <button className='login-btn'>Login</button>
                 </div>
                 <img src={toggle_light}  alt="" className='toggle-icon' />
