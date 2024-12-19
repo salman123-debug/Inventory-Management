@@ -2,9 +2,12 @@
     margin: 0;
     padding: 0;
 }
-.navbar {
-    border: 1px solid red;
+.header {
     width: 100%;
+   
+}
+
+.navbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -23,7 +26,7 @@
     transform: scale(1.1);
 }
 
-ul {
+.nav-list {
     display: flex;
     list-style: none;
     gap: 20px;
@@ -31,7 +34,7 @@ ul {
     padding: 0;
 }
 
-li {
+.nav-list li {
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
@@ -39,7 +42,7 @@ li {
     transition: color 0.3s ease, transform 0.3s ease;
 }
 
-li:hover {
+.nav-list li:hover {
     color: #007bff;
     transform: translateY(-3px);
 }
@@ -77,10 +80,14 @@ li:hover {
     cursor: pointer;
 }
 
+.btn {
+    display: flex;
+    gap: 10px;
+}
+
 .signin-btn, .login-btn {
     padding: 8px 15px;
     border: none;
-    margin: 5px;
     border-radius: 5px;
     background-color: #007bff;
     color: #fff;
@@ -105,15 +112,19 @@ li:hover {
     transform: rotate(20deg);
 }
 
+/* Responsive Styles */
 @media (max-width: 768px) {
     .navbar {
         flex-direction: column;
         align-items: flex-start;
+        padding: 15px;
     }
 
-    ul {
+    .nav-list {
         flex-direction: column;
         gap: 10px;
+        width: 100%;
+        align-items: flex-start;
     }
 
     .search-box {
@@ -121,8 +132,15 @@ li:hover {
         justify-content: space-between;
     }
 
+    .btn {
+        flex-direction: column;
+        width: 100%;
+        gap: 5px;
+    }
+
     .signin-btn, .login-btn {
         width: 100%;
+        padding: 10px;
     }
 
     .toggle-icon {
@@ -142,5 +160,9 @@ li:hover {
     .signin-btn, .login-btn {
         font-size: 12px;
         padding: 5px 10px;
+    }
+
+    .nav-list li {
+        font-size: 14px;
     }
 }
