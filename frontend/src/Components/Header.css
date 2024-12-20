@@ -82,6 +82,8 @@
 
 .btn {
     display: flex;
+    justify-content: center;
+    text-align: center;
     gap: 10px;
 }
 
