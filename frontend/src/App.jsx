@@ -1,14 +1,23 @@
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./Components/Home";
+import Login from "./Components/Login";
 
-import './App.css'
-import Home from './Components/Home'
-import { useState } from 'react'
 function App() {
-const  [theme,setTheme]=useState("light")
   return (
-    <div className="container">
-      <Home theme={theme} setTheme={setTheme} />
-      </div>
-  )
+    <>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/Login" element={<Login />} />
+        </Routes>
+      </Router>
+
+        
+
+
+    </>
+  );
 }
 
-export default App
+export default App;
