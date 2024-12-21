@@ -56,15 +56,15 @@ const registerUser = asyncHandler(async (req, res) => {
    }
 
 //password hashing
-    // const salt = await bcrypt.genSalt(10);
-    // const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
     // const hashedPassword = await userExists.isPasswordMathed(password);
 
     //create user
     const user = await User.create({
         name,
         email,
-        password,
+        password:hashedPassword,
         photo,
         phone
     });
@@ -98,8 +98,11 @@ const registerUser = asyncHandler(async (req, res) => {
 //login user
 
 const loginUser = asyncHandler(async (req, res) => {
+
+    //req body -> data
     const { email, password } = req.body;
 
+    // console.log(req.body);
     if (!email || !password) {
         res.status(400);
         throw new Error('Please add all fields');
@@ -112,41 +115,43 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new Error('User not found');
     }
 
-    //check if password matches
-    const passwordMatch = await user.isPasswordMathed(password);
-
-    if(!passwordMatch){
+    if(user.password !== password){
         res.status(400);
-        throw new Error('Invalid credentials');
+        throw new Error('Invalid password');
     }
+
+    // console.log(user);
+    //check if password matches
+    // const isPasswordMatched = await bcrypt.compare(password, user.password);
+    // console.log(isPasswordMatched);
+    // if(!isPasswordMatched) {
+    //     return res.status(401).json({ message: "Invalid password" });
+    // }
+
+   
 
     //generate token
-    const accessToken = generateAccessToken(user._id);
+    const accessToken =await generateAccessToken(user._id);
     
 
-    if (user && (await user.isPasswordMathed(password))) {
-        //generate token
-        const accessToken = generateAccessToken(user._id);
-        //send http-only cookie
-        res.cookie('accessToken', accessToken, {
-            httpOnly: true, 
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none',
-            maxAge: new Date(Date.now() + 1000 * 86400), // 1 day
-        });
+    //send http-only cookie
+    res.cookie('accessToken', accessToken, {
+        httpOnly: true, 
+        secure: true,
+        sameSite: 'none',
+        maxAge: new Date(Date.now() + 1000 * 86400), // 1 day
+    });
 
-        res.status(200).json({
-            _id: user.id,
-            name: user.name,
-            email: user.email,
-            photo: user.photo,
-            phone: user.phone,
-            token: accessToken
-        });
-    } else {
-        res.status(401);
-        throw new Error('Invalid credentials');
-    }
+    res.status(200).json({
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        photo: user.photo,
+        phone: user.phone,
+        token: accessToken
+    });
+
+   
 })
 
 module.exports = {registerUser,loginUser}

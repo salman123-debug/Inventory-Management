@@ -4,11 +4,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faLock, faEnvelope, faPhone, faImage } from "@fortawesome/free-solid-svg-icons";
 import { faFacebookF, faTwitter, faGoogle, faLinkedinIn } from "@fortawesome/free-brands-svg-icons";
 import "./Login.css";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 
 const Login = () => {
+
   const [isSignUpMode, setIsSignUpMode] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: "",
+    name: "",
     email: "",
     password: "",
     phone: "",
@@ -24,10 +29,50 @@ const Login = () => {
     setFormData({ ...formData, photo: e.target.files[0] });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     console.log(formData); // Form data displayed in console
+    try {
+      const formtosend = new FormData();
+      formtosend.append('name',formData.name);
+      formtosend.append('email',formData.email);
+      formtosend.append('password',formData.password);
+      formtosend.append('phone',formData.phone);
+      formtosend.append('photo',formData.photo);
+      const resp = await axios.post('http://localhost:8000/user/register',formtosend,{
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      console.log(resp.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
+
+  const [loginFormData, setLoginFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleLoginData = (e)=>{
+    const {name,value} = e.target;
+    setLoginFormData({...loginFormData,[name]:value})
+  }
+
+  //login form
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:8000/user/login', loginFormData);
+      console.log(response.data);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   return (
     <div className={`container ${isSignUpMode ? "sign-up-mode" : ""}`}>
@@ -40,10 +85,10 @@ const Login = () => {
               <FontAwesomeIcon icon={faUser} className="icon" />
               <input
                 type="text"
-                placeholder="Username"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
+                placeholder="email"
+                name="email"
+                value={loginFormData.email}
+                onChange={handleLoginData}
               />
             </div>
             <div className="input-field">
@@ -52,11 +97,13 @@ const Login = () => {
                 type="password"
                 placeholder="Password"
                 name="password"
-                value={formData.password}
-                onChange={handleInputChange}
+                value={loginFormData.password}
+                onChange={handleLoginData}
               />
             </div>
-            <input type="submit" value="Login" className="btnn solid" />
+            <input type="submit"
+            onClick={handleLoginSubmit}
+            value="Login" className="btnn solid" />
             <div className="social-media">
               <a href="#" className="social-icon">
                 <FontAwesomeIcon icon={faFacebookF} />
@@ -81,8 +128,8 @@ const Login = () => {
               <input
                 type="text"
                 placeholder="Username"
-                name="username"
-                value={formData.username}
+                name="name"
+                value={formData.name}
                 onChange={handleInputChange}
               />
             </div>
@@ -120,7 +167,8 @@ const Login = () => {
               <FontAwesomeIcon icon={faImage} className="icon" />
               <input
                 type="file"
-                accept="image/*"
+                // accept="image/*"
+                name="photo"
                 onChange={handleFileChange}
               />
             </div>
