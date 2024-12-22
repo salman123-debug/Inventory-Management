@@ -8,6 +8,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 
+
 const Login = () => {
 
   const [isSignUpMode, setIsSignUpMode] = useState(false);
@@ -44,7 +45,15 @@ const Login = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        phone: "",
+        photo: null,
+      })
 
+      setIsSignUpMode(false);
       console.log(resp.data);
     } catch (error) {
       console.error(error);
@@ -68,6 +77,8 @@ const Login = () => {
     try {
       const response = await axios.post('http://localhost:8000/user/login', loginFormData);
       console.log(response.data);
+      const result = await response.data.token;
+      console.log(result);
       navigate('/dashboard');
     } catch (error) {
       console.error(error);
@@ -172,7 +183,9 @@ const Login = () => {
                 onChange={handleFileChange}
               />
             </div>
-            <input type="submit" className="btnn" value="Sign up" />
+            <input type="submit"
+            onClick={handleSubmit}
+            className="btnn" value="Sign up" />
             <div className="social-media">
               <a href="#" className="social-icon">
                 <FontAwesomeIcon icon={faFacebookF} />

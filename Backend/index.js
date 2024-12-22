@@ -6,6 +6,12 @@ const dotenv = require('dotenv')
 const connectdb = require('./config/db')
 const path = require("path");
 
+const cookieParser = require('cookie-parser');
+
+
+
+app.use(cookieParser());
+
 app.use(cors());
 app.use(express.json());
 

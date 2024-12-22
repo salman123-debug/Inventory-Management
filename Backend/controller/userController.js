@@ -2,6 +2,7 @@ const User = require('../models/usermodel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
+const { model } = require('mongoose');
 
 
 // //generate JWT token
@@ -115,27 +116,27 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new Error('User not found');
     }
 
-    if(user.password !== password){
-        res.status(400);
-        throw new Error('Invalid password');
-    }
+    // if(user.password !== password){
+    //     res.status(400);
+    //     throw new Error('Invalid password');
+    // }
 
     // console.log(user);
     //check if password matches
-    // const isPasswordMatched = await bcrypt.compare(password, user.password);
+    const isPasswordMatched = await bcrypt.compare(password, user.password);
     // console.log(isPasswordMatched);
-    // if(!isPasswordMatched) {
-    //     return res.status(401).json({ message: "Invalid password" });
-    // }
+    if(!isPasswordMatched) {
+        return res.status(401).json({ message: "Invalid password" });
+    }
 
    
 
     //generate token
-    const accessToken =await generateAccessToken(user._id);
+    const token =await generateAccessToken(user._id);
     
 
     //send http-only cookie
-    res.cookie('accessToken', accessToken, {
+    res.cookie('token', token, {
         httpOnly: true, 
         secure: true,
         sameSite: 'none',
@@ -148,10 +149,56 @@ const loginUser = asyncHandler(async (req, res) => {
         email: user.email,
         photo: user.photo,
         phone: user.phone,
-        token: accessToken
+        token: token
     });
+
+    //
 
    
 })
 
-module.exports = {registerUser,loginUser}
+//logout user
+
+const logoutUser = asyncHandler(async (req, res) => {
+    res.clearCookie('token');
+    res.status(200).json({ message: 'Logout successful' });
+});
+
+//login user status
+
+//get user
+
+const getUser = asyncHandler(async (req, res) => {
+    // const token = req.cookies.token;
+    // if (!token) {
+    //     res.status(401);
+    //     throw new Error('Not authorized, no token');
+    // }
+    // const verified = jwt.verify(token, process.env.ACCESS_TOKEN);
+
+    // const user = await User.findById(verified.id).select('-password');
+    // if (!user) {
+    //     res.status(401);
+    //     throw new Error('User not found');
+    // }
+    const { _id } = req.user;
+    console.log(_id);
+    const userprofile = await User.findById(_id);
+    console.log(userprofile);
+    if(userprofile){
+        const {_id,name,email,photo,phone} = userprofile;
+        res.status(200).json({message:"user fetched",
+        _id,
+        name,
+        email,
+        photo,
+        phone
+        });
+    }
+    else{
+        res.status(404);
+        throw new Error('User not found');
+    }
+});
+
+module.exports = {registerUser,loginUser,logoutUser,getUser};
