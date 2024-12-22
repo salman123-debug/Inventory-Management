@@ -12,12 +12,26 @@ input {
   font-family: "Poppins", sans-serif;
 }
 
+
 .container {
   position: relative;
-  width: 100%;
+  width: calc(100% - 100px); 
+  height: calc(100vh - 100px); 
+  margin: 50px; 
   background-color: #fff;
-  min-height: 100vh;
   overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+  border-radius: 10px;
+  transition: all 0.3s ease-in-out; 
+  border: 5px solid rgb(155, 180, 166);
+  box-shadow: 8 20px 28 px rgba(0, 0, 0, 0.938); 
+  
+}
+.container:hover {
+  box-shadow:0 6px 8px 12px rgba(29, 135, 235, 0.719); 
+  transform: translateY(-10px); 
+  cursor: pointer;
+
 }
 
 .forms-container {
