@@ -14,6 +14,8 @@ import ProductList from './ProductList';
 import Addproduct from './Addproduct';
 import Categorylist from './Categorylist';
 import Addcategory from './Addcategory';
+import { useNavigate } from 'react-router-dom';
+
 
 
 
@@ -23,7 +25,7 @@ function Dashboard() {
     const [sidebarIcon, setSidebarIcon] = React.useState(false);
     const [currentview, setCurrentview] = React.useState('home');
     const [activeMenu, setActiveMenu] = React.useState(null);
-
+    const navigate = useNavigate();
     const toggleSubMenu = (menu) => {
         setActiveMenu(activeMenu === menu ? null : menu);
     };
@@ -58,7 +60,20 @@ function Dashboard() {
 
 //logout handle by cookie
 
-const handleLogout = () => {
+const handleLogout =async () => {
+    try {
+        const response = await fetch('http://localhost:8000/user/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+    navigate('/Login');
+        console.log(response);
+    } catch (error) {
+        console.error("Logout Error:", error.response?.data?.message || error.message);
+        alert("Failed to log out. Please try again.");
+    }
 }
 
 
@@ -127,7 +142,7 @@ const handleLogout = () => {
                                 </ul>
                             )}
                             <li className='px-2 py-3 shadow-sm cursor-pointer rounded-md  hover:shadow-lg flex gap-3  items-center'
-                                onClick={() => handleClick("logout")}
+                                onClick={handleLogout}
                             >
                                 <IoLogOut className='h-6 w-6' />
                                 Logout</li>

@@ -7,9 +7,10 @@ function User() {
 
   const fetchUser = async () => {
     try {
-      const resp = await axios.get('http://localhost:8000/user/getUser')
-      setUser(resp.data);
-      console.log(resp.data);
+      const resp = await axios.get('http://localhost:8000/user/getuser');
+      const data = await resp.data;
+    setUser(data);
+    
     } catch (error) {
       console.log(error);
     }

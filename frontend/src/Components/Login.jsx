@@ -77,9 +77,10 @@ const Login = () => {
     try {
       const response = await axios.post('http://localhost:8000/user/login', loginFormData);
       console.log(response.data);
+      // const userData = response.data;
       const result = await response.data.token;
       console.log(result);
-      navigate('/dashboard');
+      navigate('/dashboard',{state:{userData:response.data.name}});
     } catch (error) {
       console.error(error);
     }

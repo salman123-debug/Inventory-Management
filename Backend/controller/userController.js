@@ -2,7 +2,7 @@ const User = require('../models/usermodel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
-const { model } = require('mongoose');
+
 
 
 // //generate JWT token
@@ -71,9 +71,9 @@ const registerUser = asyncHandler(async (req, res) => {
     });
 
     //generate token
-    const accessToken = generateAccessToken(user._id);
+    const token = generateAccessToken(user._id);
     //send http-only cookie
-    res.cookie('accessToken', accessToken, {
+    res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'none',
@@ -87,7 +87,7 @@ const registerUser = asyncHandler(async (req, res) => {
             email: user.email,
             photo: user.photo,
             phone: user.phone,
-            token: accessToken
+            token: token
         });
     } else {
         res.status(400);
@@ -134,16 +134,16 @@ const loginUser = asyncHandler(async (req, res) => {
     //generate token
     const token =await generateAccessToken(user._id);
     
+    const options ={
+        httpOnly: true,
+        secure:true
+    }
 
     //send http-only cookie
-    res.cookie('token', token, {
-        httpOnly: true, 
-        secure: true,
-        sameSite: 'none',
-        maxAge: new Date(Date.now() + 1000 * 86400), // 1 day
-    });
-
-    res.status(200).json({
+    return res
+    .cookie('token', token, options)
+    .status(200)
+    .json({
         _id: user.id,
         name: user.name,
         email: user.email,
@@ -151,10 +151,6 @@ const loginUser = asyncHandler(async (req, res) => {
         phone: user.phone,
         token: token
     });
-
-    //
-
-   
 })
 
 //logout user
@@ -166,27 +162,13 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 //login user status
 
-//get user
-
+//
 const getUser = asyncHandler(async (req, res) => {
-    // const token = req.cookies.token;
-    // if (!token) {
-    //     res.status(401);
-    //     throw new Error('Not authorized, no token');
-    // }
-    // const verified = jwt.verify(token, process.env.ACCESS_TOKEN);
 
-    // const user = await User.findById(verified.id).select('-password');
-    // if (!user) {
-    //     res.status(401);
-    //     throw new Error('User not found');
-    // }
-    const { _id } = req.user;
-    console.log(_id);
-    const userprofile = await User.findById(_id);
-    console.log(userprofile);
-    if(userprofile){
-        const {_id,name,email,photo,phone} = userprofile;
+    // res.send("get user api");
+    const user = User.findById(req.user._id);
+    if(user){
+        const {_id,name,email,photo,phone} = user;
         res.status(200).json({message:"user fetched",
         _id,
         name,
@@ -199,6 +181,7 @@ const getUser = asyncHandler(async (req, res) => {
         res.status(404);
         throw new Error('User not found');
     }
+
 });
 
 module.exports = {registerUser,loginUser,logoutUser,getUser};
