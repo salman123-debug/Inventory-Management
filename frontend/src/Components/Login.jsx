@@ -187,7 +187,7 @@ const Login = () => {
             <input type="submit"
             onClick={handleSubmit}
             className="btnn" value="Sign up" />
-            <div className="social-media">
+            {/* <div className="social-media">
               <a href="#" className="social-icon">
                 <FontAwesomeIcon icon={faFacebookF} />
               </a>
@@ -200,7 +200,7 @@ const Login = () => {
               <a href="#" className="social-icon">
                 <FontAwesomeIcon icon={faLinkedinIn} />
               </a>
-            </div>
+            </div> */}
           </form>
         </div>
       </div>
