@@ -2,12 +2,10 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 
-function Addproduct() {
-  const location = useLocation();
-  const user = location.state.userData;
-  console.log("user",user);
+function Addproduct({user}) {
+  // console.log("user",user);
   const [formData, setFormData] = useState({
-    userName: user._id,
+    
     productName: '',
     category: '',
     quantity: '',
@@ -54,7 +52,7 @@ function Addproduct() {
     console.log(formData);
     try {
       const formdatasend = new FormData();
-      formdatasend.append('userName', formData.userName);
+      // formdatasend.append('userName', user.name);
       formdatasend.append('productName', formData.productName);
       formdatasend.append('category', formData.category);
       formdatasend.append('quantity', formData.quantity);
@@ -66,8 +64,7 @@ function Addproduct() {
       console.log(data);
     } catch (error) {
       console.log(error);
-    }
-    
+    } 
   };
   return (
     <div>
@@ -76,14 +73,15 @@ function Addproduct() {
 
           <h1 className="text-3xl font-bold text-center">Add Product</h1>
           <div className="cetInput ">
-            <div className='flex flex-col gap-2 mt-5'>
-            {/* <label htmlFor='userName' className='text-lg ml-24'>User</label> */}
+            {/* <div className='flex flex-col gap-2 mt-5'>
+            {/* <label htmlFor='userName' className='text-lg ml-24'>User</label> 
             <input type="text" placeholder='User Name'
               name='userName'
-              value={formData.userName}
+              value={user.name}
+              disabled
               onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
               className='p-2  w-3/4 m-auto rounded-md' />
-            </div>
+            </div> */}
             <div className='flex flex-col gap-2 mt-5'>
             {/* <label htmlFor='userName' className='text-lg'>Product Name</label> */}
             <input type="text" placeholder='Product Name'

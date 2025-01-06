@@ -14,13 +14,15 @@ import ProductList from './ProductList';
 import Addproduct from './Addproduct';
 import Categorylist from './Categorylist';
 import Addcategory from './Addcategory';
-import { useNavigate } from 'react-router-dom';
-
+import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 
 
 
 function Dashboard() {
+    const location = useLocation();
+    const user = location.state|| {};
     const [showSidebar, setShowSidebar] = React.useState(true);
     const [sidebarIcon, setSidebarIcon] = React.useState(false);
     const [currentview, setCurrentview] = React.useState('home');
@@ -44,11 +46,11 @@ function Dashboard() {
             case "Hero":
                 return <Hero />;
             case "user":
-                return <User />;
+                return <User userData={user}/>;
             case "productList":
                 return <ProductList />;
             case "addProduct":
-                return <Addproduct />;
+                return <Addproduct user={user} />;
             case "categoryList":
                 return <Categorylist/>;
             case "addCategory":
@@ -62,12 +64,7 @@ function Dashboard() {
 
 const handleLogout =async () => {
     try {
-        const response = await fetch('http://localhost:8000/user/logout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await axios.post('http://localhost:8000/user/logout',{withCredentials:true})
     navigate('/Login');
         console.log(response);
     } catch (error) {
@@ -76,7 +73,7 @@ const handleLogout =async () => {
     }
 }
 
-
+// console.log(document.cookie);
     return (
         <div>
             <div className="dashboard-container bg-slate-500 h-full w-full flex ">

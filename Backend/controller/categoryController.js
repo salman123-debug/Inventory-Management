@@ -3,13 +3,16 @@ const asyncHandler = require("express-async-handler");
 
 const addCategory = asyncHandler(async (req, res) => {
     const { categoryName } = req.body;
-    const category = await Category.create({ categoryName });
+    const category = await Category.create({ 
+        username: req.user._id,
+        categoryName
+     });
     res.status(201).json(category);
 });
 
 //get all categories
 const getAllCategories = asyncHandler(async (req, res) => {
-    const categories = await Category.find({});
+    const categories = await Category.find({username:req.user._id});
     res.status(200).json(categories);
 });
 
