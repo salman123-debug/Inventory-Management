@@ -60,12 +60,35 @@ function ProductList() {
     }
   }
 
+  const [editProduct, setEditProduct] = useState(false);
+  const handleEditProduct =async (productId) => {
+    try {
+      const resp = await axios.get(`http://localhost:8000/product/getproduct/${productId}`);
+      const product = await resp.data;
+      setEditProduct(product);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
+  //update product
+  const handleEditProductSubmit = async (e) => {
+    e.preventDefault();
+    try{
+      const formdatasend = new FormData();
+      formdatasend.append('productName', editProduct.productName);
+      formdatasend.append('category', editProduct.category);
+      formdatasend.append('quantity',editProduct.quantity);
+      formdatasend.append('price',editProduct.price);
+      formdatasend.append('description',editProduct.description)
+    }
+    catch(err){
+      console.log(err)
+    }
+  }
 
 
   return (
-
-
     <div className="flex justify-center items-center min-h-screen  bg-gray-100">
       
     {viewProduct && (
@@ -87,6 +110,78 @@ function ProductList() {
           >
             Close
           </button>
+        </div>
+      </div>
+    )}
+    {editProduct && (
+      <div className="fixed top-0 left-0 w-full h-full p-5 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-7 rounded  shadow-lg min-h-9 flex flex-col justify-center items-center gap-5 w-1/3">
+          <h2 className="text-4xl font-bold font-serif mb-2">Edit Product</h2>
+          {/* <div className=' flex flex-col justify-center items-center gap-2'>
+            <img src={`http://localhost:8000/uploads/${editProduct.productImage}`} alt={editProduct.productName} className="w-[300px] h-[200px]"/>
+          <p className='text-xl font-bold font-serif'>Product Name: {editProduct.productName}</p>
+          <p className='text-xl font-bold font-serif'>Category: {editProduct.category}</p>
+          <p className='text-xl font-bold font-serif'>Quantity: {editProduct.quantity}</p>
+          <p className='text-xl font-bold font-serif'>Price: {editProduct.price}</p>
+          <p className='text-xl font-bold font-serif'>Description: {editProduct.description}</p>
+          </div> */}
+          <form onSubmit={handleEditProductSubmit}>
+            <div className="mb-4">
+              <label className="block text-gray-700 font-bold mb-2" htmlFor="productName">Product Name</label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="productName"
+                type="text"
+                value={editProduct.productName}
+                onChange={(e) => setEditProduct({ ...editProduct, productName: e.target.value })}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 font-bold mb-2" htmlFor="category">Category</label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="category"
+                type="text"
+                value={editProduct.category}
+                onChange={(e) => setEditProduct({ ...editProduct, category: e.target.value })}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 font-bold mb-2" htmlFor="quantity">Quantity</label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="quantity"
+                type="number"
+                value={editProduct.quantity}
+                onChange={(e) => setEditProduct({ ...editProduct, quantity: e.target.value })}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 font-bold mb-2" htmlFor="price">Price</label>
+              <input
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="price"
+                type="number"
+                value={editProduct.price}
+                onChange={(e) => setEditProduct({ ...editProduct, price: e.target.value })}
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 font-bold mb-2" htmlFor="description">Description</label>
+              <textarea
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                id="description"
+                value={editProduct.description}
+                onChange={(e) => setEditProduct({ ...editProduct, description: e.target.value })}
+              />
+            </div>
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200"
+              type="submit"
+            >
+              Update Product
+            </button>
+          </form>
         </div>
       </div>
     )}
@@ -121,7 +216,7 @@ function ProductList() {
                     <GrView />
                   </button>
                   <button className="bg-green-500 text-white px-3 py-1 ml-2 rounded-md hover:bg-blue-600 transition duration-200"
-                  // onClick={()=>handleProductEdit(product._id)}
+                  onClick={()=>handleEditProduct(product._id)}
                   >
                     <FaEdit />
 
