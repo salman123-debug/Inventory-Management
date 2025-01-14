@@ -129,6 +129,49 @@ const logoutUser = asyncHandler(async (req, res) => {
     res.status(200).json({message:"Logged out successfully"});
 })
 
+//refresh token
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken = req.cookies.refreshToken;
+    if (!incomingRefreshToken) {
+        res.status(401);
+        throw new Error('Unauthorized');
+    }
+   try {
+     const decoded = jwt.verify(incomingRefreshToken, process.env.REFRESH_SECRET_KEY);
+     const user = await User.findById(decoded?.id);
+ 
+     if (!user) {
+         res.status(401);
+         throw new Error('Unauthorized');
+     }
+     if(incomingRefreshToken !== user?.refreshToken){
+         res.status(401);
+         throw new Error('Refresh token is expired or used');
+     }
+ 
+ 
+     const accessToken = generateAccessToken(user._id);
+     const newRefreshToken = generateRefreshToken(user._id);
+     // user.refreshToken = newRefreshToken;
+     // await user.save({ validateBeforeSave: false });
+ 
+     return res
+     .status(200)
+     .cookie('accessToken', accessToken, {
+         httpOnly: true,
+         secure: true,
+     })
+     .cookie('refreshToken', newRefreshToken, {
+         httpOnly: true,
+         secure: true,
+     })
+     .json({ accessToken, refreshToken:newRefreshToken },"Access token refreshed");
+   } catch (error) {
+    return res.status(400).json(error?.message || "invalid refresh token");
+    // throw new Error("this is backend error",error)
+   }
+})
 
 //get user
 
@@ -137,4 +180,37 @@ const getUser = asyncHandler(async (req,res) =>{
     res.status(200).json(user);
 })
 
-module.exports = {registerUser,loginUser,logoutUser,getUser};
+//change password
+
+const changePassword = asyncHandler(async (req,res) => {
+    const {currentPassword, newPassword} = req.body;
+    console.log(req.body);
+    const user = await User.findById(req.user._id);
+    if(!currentPassword || !newPassword){
+        res.status(400);
+        throw new Error('Please add all fields');
+    }
+
+    if(!user){
+        res.status(400);
+        throw new Error('User not found');
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // if(currentPassword === user.password){
+        
+    // }
+    const isPasswordMatched = await bcrypt.compare(currentPassword, user.password);
+    if(!isPasswordMatched) {
+        res.status(400);
+        throw new Error('Invalid credentials');
+    }
+    user.password = hashedPassword;
+    await user.save({validateBeforeSave: false});
+    res.status(200).json({message:"Password changed successfully"});
+})
+
+
+
+module.exports = {registerUser,loginUser,logoutUser,getUser,refreshAccessToken,changePassword};

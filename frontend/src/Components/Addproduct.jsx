@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 function Addproduct({user}) {
   // console.log("user",user);
@@ -15,15 +16,7 @@ function Addproduct({user}) {
   });
 
  
-  // const {userData}= location.state || {};
 
-  // useEffect(() => {
-  //   if (location.state) {
-  //     const userData = location.state.userData;
-  //     setFormData({ ...formData, userName: userData._id });
-  //   }
-  // }, [location.state]);
-  // console.log("user",userData);
 
   const handleFileChange = (e) => {
     setFormData({ ...formData, productImage: e.target.files[0] });
@@ -61,7 +54,22 @@ function Addproduct({user}) {
       formdatasend.append('productImage', formData.productImage);
       const resp = await axios.post('http://localhost:8000/product/addproduct', formdatasend);
       const data = await resp.data;
-      console.log(data);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Product added successfully',
+        showConfirmButton: false,
+        timer: 1500
+      })
+      setFormData({
+        productName: '',
+        category: '',
+        quantity: '',
+        price: '',
+        description: '',
+        productImage: null
+      })
+      // console.log(data);
     } catch (error) {
       console.log(error);
     } 

@@ -26,7 +26,7 @@ router.get('/getallproducts',authenticate, getAllProducts);
 //get product by id
 router.get('/getproduct/:id',authenticate, getProductById);
 //update product by id
-router.put('/updateproduct/:id',authenticate, updateProductById);
+router.put('/updateproduct/:id',authenticate,upload.single('productImage'), updateProductById);
 //delete product by id
 router.delete('/deleteproduct/:id',authenticate, deleteProductById);
 
