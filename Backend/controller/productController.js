@@ -6,6 +6,7 @@ const addProduct =asyncHandler(async (req, res) => {
   const {productName,category,price,description,quantity} = req.body;
   console.log(req.file);
   const productImage = req.file ? req.file.filename : '';
+})
 
 const createProduct = asyncHandler(async (req, res) => {
     const {productName, category, price, description, quantity} = req.body;
