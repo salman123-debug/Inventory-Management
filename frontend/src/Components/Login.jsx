@@ -42,9 +42,11 @@ const Login = () => {
       formtosend.append('photo',formData.photo);
       const resp = await axios.post('http://localhost:8000/user/register',formtosend,{
         headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+          'Content-Type': 'multipart/form-data',
+          'authorization': `Bearer ${document.cookie.split('=')[1]}`
+        },
+      }
+      );
       setFormData({
         name: "",
         email: "",
@@ -75,12 +77,15 @@ const Login = () => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/user/login', loginFormData);
+      const response = await axios.post('http://localhost:8000/user/login', loginFormData, {withCredentials:true},
+
+      );
       console.log(response.data);
       // const userData = response.data;
-      const result = await response.data.token;
+      const result = await response.data.accessToken;
       console.log(result);
-      navigate('/dashboard',{state:{userData:response.data.name}});
+      axios.defaults.headers.common['authorization'] = `Bearer ${result}`               
+      navigate('/dashboard',{state:response.data});
     } catch (error) {
       console.error(error);
     }

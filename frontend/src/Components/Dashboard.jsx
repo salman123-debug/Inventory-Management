@@ -14,13 +14,20 @@ import ProductList from './ProductList';
 import Addproduct from './Addproduct';
 import Categorylist from './Categorylist';
 import Addcategory from './Addcategory';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { RiLockPasswordFill } from "react-icons/ri";
+import ChangePassword from './ChangePassword';
 
 
 
 
 
 function Dashboard() {
+    const location = useLocation();
+    const user = location.state|| {};
+    // console.log("usus",user);
+    // const products = location.state || [];
     const [showSidebar, setShowSidebar] = React.useState(true);
     const [sidebarIcon, setSidebarIcon] = React.useState(false);
     const [currentview, setCurrentview] = React.useState('home');
@@ -42,17 +49,19 @@ function Dashboard() {
     const renderView = () => {
         switch (currentview) {
             case "Hero":
-                return <Hero />;
+                return <Hero  user={user} />;
             case "user":
-                return <User />;
+                return <User userData={user}/>;
             case "productList":
                 return <ProductList />;
             case "addProduct":
-                return <Addproduct />;
+                return <Addproduct user={user} />;
             case "categoryList":
                 return <Categorylist/>;
             case "addCategory":
                 return <Addcategory/>;
+            case "changePassword":
+                return <ChangePassword/>;
             default:
                 return <Hero />;
         }
@@ -62,12 +71,7 @@ function Dashboard() {
 
 const handleLogout =async () => {
     try {
-        const response = await fetch('http://localhost:8000/user/logout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+        const response = await axios.post('http://localhost:8000/user/logout',{withCredentials:true})
     navigate('/Login');
         console.log(response);
     } catch (error) {
@@ -76,12 +80,12 @@ const handleLogout =async () => {
     }
 }
 
-
+// console.log(document.cookie);
     return (
         <div>
             <div className="dashboard-container bg-slate-500 h-full w-full flex ">
-                {showSidebar && <div className="dashboard-left h-full w-1/5 bg-gray-200 p-4">
-                    <div className="logo-dashboard h-1/5 w-3/4 ">
+                {showSidebar && <div className="dashboard-left min-h-screen w-1/5 bg-gray-200 p-4">
+                    <div className="logo-dashboard  w-3/4 ">
                         <img src='./logo-light-full.png' alt='logo' className='w-full h-full' />
                     </div>
                     <div className="sidebar-content mt-5 ">
@@ -142,6 +146,11 @@ const handleLogout =async () => {
                                 </ul>
                             )}
                             <li className='px-2 py-3 shadow-sm cursor-pointer rounded-md  hover:shadow-lg flex gap-3  items-center'
+                                onClick={() => handleClick("changePassword")}
+                            >
+                                <RiLockPasswordFill className='h-6 w-6' />
+                                Change Password</li>
+                            <li className='px-2 py-3 shadow-sm cursor-pointer rounded-md  hover:shadow-lg flex gap-3  items-center'
                                 onClick={handleLogout}
                             >
                                 <IoLogOut className='h-6 w-6' />
@@ -149,8 +158,8 @@ const handleLogout =async () => {
                         </ul>
                     </div>
                 </div>}
-                {sidebarIcon && <div className="dashboard-left h-full w-20 bg-gray-200 p-4">
-                    <div className="logo-dashboard h-1/5 w-3/4">
+                {sidebarIcon && <div className="dashboard-left min-h-44 w-20 bg-gray-200 p-4">
+                    <div className="logo-dashboard  w-3/4">
                         <img src='./logo-light-streamline.png' alt='logo' className='w-full h-full' />
                     </div>
                     <div className="sidebar-content mt-5">
@@ -199,7 +208,13 @@ const handleLogout =async () => {
                                     </li>
                                 </ul>
                             </li>
-                            <li className='px-2 py-3 shadow-sm cursor-pointer rounded-md  hover:shadow-lg flex gap-3  items-center'>
+                            
+                            <li className='px-2 py-3 shadow-sm cursor-pointer rounded-md  hover:shadow-lg flex gap-3  items-center'
+                            onClick={() => handleClick("changePassword")}>
+                                <RiLockPasswordFill className='h-6 w-6' />
+                            </li>
+                            <li className='px-2 py-3 shadow-sm cursor-pointer rounded-md  hover:shadow-lg flex gap-3  items-center'
+                            onClick={handleLogout}>
                                 <IoLogOut className='h-6 w-6' />
                             </li>
                         </ul>
@@ -244,7 +259,7 @@ const handleLogout =async () => {
                         </button>
 
                     </div>
-                    <div className="dashboard-content h-full w-full p-5 bg-white">
+                    <div className="dashboard-content min-h-screen w-full p-5 bg-gray-100">
                         {renderView()}
                     </div>
                 </div>

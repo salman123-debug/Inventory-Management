@@ -1,43 +1,41 @@
+
 const User = require('../models/usermodel');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const asyncHandler = require('express-async-handler');
+const jwt = require('jsonwebtoken') 
+const asyncHandler = require('express-async-handler')
+const bcrypt = require('bcrypt');
 
 
+//generate token
 
-// //generate JWT token
-// const generateToken= async (id)=>{
-//     try {
-//         const user = await User.findById(id);
-//         const accessToken = user.generateAccessToken();
-//         user.accessToken = accessToken
-//         await user.save({validateBeforeSave:false});
-//         return accessToken
-//     } catch (error) {
-//         console.log(error);
-//     }
-// }
-
-const generateAccessToken = async function () {
+const generateAccessToken =  (id)=>{
     return jwt.sign(
         {
-            id: this._id,
-            email: this.email,
-            name: this.name
-
+            id
         },
-        process.env.ACCESS_TOKEN,
+        process.env.SECRET_KEY,
         {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+            expiresIn:process.env.SECRET_KEY_EXPIRY
         }
     )
 }
 
-//register user
-const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, password, phone } = req.body;
+const generateRefreshToken =  (id) => {
+    return jwt.sign(
+        {
+            id
+        },
+        process.env.REFRESH_SECRET_KEY,
+        {
+            expiresIn:process.env.REFRESH_SECRET_KEY_EXPIRY
+        }
+    )
+}
+ 
 
-    if (!name || !email || !password || !phone) {
+const registerUser = asyncHandler(async (req, res) => {
+    const {name, email, password, phone} = req.body;
+
+    if(!name || !email || !password || !phone){
         res.status(400);
         throw new Error('Please add all fields');
     }
@@ -50,50 +48,27 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new Error('User already exists');
     }
 
-   //photo upload
-   const photo = req.file?req.file.filename:'';
-   if(!photo){
-    res.status(400);
-   }
+    //photo upload
+    const photo = req.file?req.file.filename:'';
 
-//password hashing
+    if(!photo){
+        res.status(400);
+        throw new Error('Please upload a photo');
+    }
+
+    //hashed
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    // const hashedPassword = await userExists.isPasswordMathed(password);
 
-    //create user
     const user = await User.create({
         name,
         email,
-        password:hashedPassword,
+        password: hashedPassword,
         photo,
         phone
     });
 
-    //generate token
-    const token = generateAccessToken(user._id);
-    //send http-only cookie
-    res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
-        maxAge: new Date(Date.now() + 1000 * 86400), // 1 day
-    });
-
-   if (user) {
-         res.status(201).json({
-            _id: user.id,
-            name: user.name,
-            email: user.email,
-            photo: user.photo,
-            phone: user.phone,
-            token: token
-        });
-    } else {
-        res.status(400);
-        throw new Error('Invalid user data');
-    }
-
+    res.status(201).json({user, message:"user created successfully"})
 })
 
 //login user
@@ -115,73 +90,127 @@ const loginUser = asyncHandler(async (req, res) => {
         res.status(400);
         throw new Error('User not found');
     }
-
-    // if(user.password !== password){
-    //     res.status(400);
-    //     throw new Error('Invalid password');
-    // }
-
-    // console.log(user);
-    //check if password matches
-    const isPasswordMatched = await bcrypt.compare(password, user.password);
+    // console.log(password)
+   const isPasswordMatched = await bcrypt.compare(password, user.password);
     // console.log(isPasswordMatched);
     if(!isPasswordMatched) {
-        return res.status(401).json({ message: "Invalid password" });
+        res.status(400);
+        throw new Error('Invalid credentials');
     }
-
-   
 
     //generate token
-    const token =await generateAccessToken(user._id);
-    
-    const options ={
-        httpOnly: true,
-        secure:true
-    }
+    // console.log(user._id);
+    // const {accessToken, refreshToken} = await generateAccessRefreshToken(user._id);
+    const accessToken = generateAccessToken(user._id);
+    const refreshToken = generateRefreshToken(user._id);
 
-    //send http-only cookie
+    user.refreshToken = refreshToken;
+    await user.save({validateBeforeSave: false});
+
     return res
-    .cookie('token', token, options)
     .status(200)
-    .json({
-        _id: user.id,
-        name: user.name,
-        email: user.email,
-        photo: user.photo,
-        phone: user.phone,
-        token: token
-    });
+    .cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: true,})
+    .cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true,
+    })
+    .json({message:"Login successfull",accessToken,refreshToken,user});
 })
 
 //logout user
 
 const logoutUser = asyncHandler(async (req, res) => {
-    res.clearCookie('token');
-    res.status(200).json({ message: 'Logout successful' });
-});
+    // console.log(req.user._id)
+    await User.findByIdAndUpdate(req.user._id, { refreshToken: 1 });
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    res.status(200).json({message:"Logged out successfully"});
+})
 
-//login user status
+//refresh token
 
-//
-const getUser = asyncHandler(async (req, res) => {
-
-    // res.send("get user api");
-    const user = User.findById(req.user._id);
-    if(user){
-        const {_id,name,email,photo,phone} = user;
-        res.status(200).json({message:"user fetched",
-        _id,
-        name,
-        email,
-        photo,
-        phone
-        });
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken = req.cookies.refreshToken;
+    if (!incomingRefreshToken) {
+        res.status(401);
+        throw new Error('Unauthorized');
     }
-    else{
-        res.status(404);
+   try {
+     const decoded = jwt.verify(incomingRefreshToken, process.env.REFRESH_SECRET_KEY);
+     const user = await User.findById(decoded?.id);
+ 
+     if (!user) {
+         res.status(401);
+         throw new Error('Unauthorized');
+     }
+     if(incomingRefreshToken !== user?.refreshToken){
+         res.status(401);
+         throw new Error('Refresh token is expired or used');
+     }
+ 
+ 
+     const accessToken = generateAccessToken(user._id);
+     const newRefreshToken = generateRefreshToken(user._id);
+     // user.refreshToken = newRefreshToken;
+     // await user.save({ validateBeforeSave: false });
+ 
+     return res
+     .status(200)
+     .cookie('accessToken', accessToken, {
+         httpOnly: true,
+         secure: true,
+     })
+     .cookie('refreshToken', newRefreshToken, {
+         httpOnly: true,
+         secure: true,
+     })
+     .json({ accessToken, refreshToken:newRefreshToken },"Access token refreshed");
+   } catch (error) {
+    return res.status(400).json(error?.message || "invalid refresh token");
+    // throw new Error("this is backend error",error)
+   }
+})
+
+//get user
+
+const getUser = asyncHandler(async (req,res) =>{
+    const user = await User.findById(req.user._id);
+    res.status(200).json(user);
+})
+
+//change password
+
+const changePassword = asyncHandler(async (req,res) => {
+    const {currentPassword, newPassword} = req.body;
+    console.log(req.body);
+    const user = await User.findById(req.user._id);
+    if(!currentPassword || !newPassword){
+        res.status(400);
+        throw new Error('Please add all fields');
+    }
+
+    if(!user){
+        res.status(400);
         throw new Error('User not found');
     }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-});
+    // if(currentPassword === user.password){
+        
+    // }
+    const isPasswordMatched = await bcrypt.compare(currentPassword, user.password);
+    if(!isPasswordMatched) {
+        res.status(400);
+        throw new Error('Invalid credentials');
+    }
+    user.password = hashedPassword;
+    await user.save({validateBeforeSave: false});
+    res.status(200).json({message:"Password changed successfully"});
+})
 
-module.exports = {registerUser,loginUser,logoutUser,getUser};
+
+
+module.exports = {registerUser,loginUser,logoutUser,getUser,refreshAccessToken,changePassword};
